@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas - ToDo App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+        .tarea {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .completada {
+            text-decoration: line-through;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 Lista de Tareas (ToDo)</h1>
+
+    <div>
+        <input type="text" id="nuevaTarea" placeholder="Escribir nueva tarea..." />
+        <button onclick="agregarTarea()">Agregar</button>
+    </div>
+
+    <div id="listaTareas">
+        <p>Cargando tareas...</p>
+    </div>
+
+    <div>
+        <h3>Estado del Sistema</h3>
+        <button onclick="verificarEstado()">Verificar Conexión API/Redis</button>
+        <div id="estadoSistema"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

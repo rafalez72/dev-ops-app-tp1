@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Servicio Redis para almacenamiento en caché
+  redis:
+    image: redis:7-alpine
+    container_name: todo_redis_prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - todo-network
+
+  # API REST - usar imagen desde Docker Hub
+  api:
+    image: ${DOCKER_USERNAME}/todo-api:latest
+    container_name: todo_api_prod
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - todo-network
+
+  # Frontend - usar imagen desde Docker Hub
+  frontend:
+    image: ${DOCKER_USERNAME}/todo-frontend:latest
+    container_name: todo_frontend_prod
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    depends_on:
+      - api
+    networks:
+      - todo-network
+
+networks:
+  todo-network:
+    driver: bridge

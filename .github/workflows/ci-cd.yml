@@ -9,59 +9,61 @@ on:
 env:
   REGISTRY: docker.io
   API_IMAGE_NAME: todo-api
+  FRONTEND_IMAGE_NAME: todo-frontend
+
+jobs:
+  test:
+    name: Test API and Frontend
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Crear docker-compose.prod.yml
+    - name: Test API
       run: |
-        cat > docker-compose.prod.yml << EOF
-        version: '3.8'
-        services:
-          redis:
-            image: redis:7-alpine
-            restart: unless-stopped
-            ports:
-              - "6379:6379"
-            networks:
-              - todo-network
+        set -e
+        cd api
+        npm install
+        node -c server.js
 
-          api:
-            image: ${{ secrets.DOCKER_USERNAME }}/${{ env.API_IMAGE_NAME }}:latest
-            restart: unless-stopped
-            ports:
-              - "3000:3000"
-            environment:
-              - PORT=3000
-              - REDIS_URL=redis://redis:6379
-            depends_on:
-              - redis
-            networks:
-              - todo-network
-
-          frontend:
-            image: ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
-            restart: unless-stopped
-            ports:
-              - "8080:8080"
-            environment:
-              - PORT=8080
-            depends_on:
-              - api
-            networks:
-              - todo-network
-
-        networks:
-          todo-network:
-            driver: bridge
-        EOF
-
-    - name: Mostrar información de despliegue
+    - name: Test Frontend
       run: |
-        echo "🚀 Imágenes construidas y publicadas:"
-        echo "   - API: ${{ secrets.DOCKER_USERNAME }}/${{ env.API_IMAGE_NAME }}:latest"
-        echo "   - Frontend: ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest"
-        echo ""
-        echo "📋 Para desplegar en producción:"
-        echo "   docker-compose -f docker-compose.prod.yml up -d"
+        set -e
+        cd frontend
+        npm install
+        node -c server.js
+
+  build-and-push:
+    name: Build and push images (only on main)
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push API image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./api
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.API_IMAGE_NAME }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+
+    - name: Build and push Frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}

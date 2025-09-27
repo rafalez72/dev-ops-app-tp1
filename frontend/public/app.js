@@ -1,5 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
-
+const API_URL =  "https://dev-ops-app-2.onrender.com/api"
 async function cargarTareas() {
     try {
         const respuesta = await fetch(`${API_URL}/todos`);

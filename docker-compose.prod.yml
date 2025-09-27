@@ -39,7 +39,24 @@ services:
       - api
     networks:
       - todo-network
-
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: todo_redis_commander
+    restart: unless-stopped
+    environment:
+      # Conecta al servicio 'redis' del mismo compose
+      # Si tu Redis tuviera password: local:redis:6379:<PASSWORD>
+      - REDIS_HOSTS=local:redis:6379
+      # Idioma opcional:
+      - HTTP_USER=           # vacío = sin auth
+      - HTTP_PASSWORD=       # vacío = sin auth
+    depends_on:
+      - redis
+    ports:
+      # EXPUESTO PÚBLICO: http://<IP_O_DOMINIO>:8081
+      - "8081:8081"
+    networks:
+      - todo-network
 networks:
   todo-network:
     driver: bridge

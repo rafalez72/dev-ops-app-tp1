@@ -1,11 +1,12 @@
 const express = require('express');
-const redis = require('redis');
+const { Redis } = require('@upstash/redis');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const REDIS_URL = process.env.REDIS_URL || 'redis://redis:6379';
+const REDIS_URL = process.env.REDIS_URL
+;
 
 app.use(cors());
 app.use(express.json());
@@ -14,15 +15,11 @@ let redisClient;
 
 async function conectarRedis() {
   try {
-    redisClient = redis.createClient({
-      url: REDIS_URL
-    });
+    redisClient = new Redis({
+      url: REDIS_URL,
+      token: process.env.REDIS_TOKEN,
+    })
 
-    redisClient.on('error', (err) => {
-      console.error('Error de conexión a Redis:', err);
-    });
-
-    await redisClient.connect();
     console.log('✅ Conectado a Redis exitosamente');
   } catch (error) {
     console.error('❌ Error al conectar con Redis:', error);
@@ -32,12 +29,12 @@ async function conectarRedis() {
 // GET /api/todos - Obtener todas las tareas
 app.get('/api/todos', async (req, res) => {
   try {
+
     const todos = await redisClient.get('todos');
-    if (todos) {
-      res.json(JSON.parse(todos));
-    } else {
-      res.json([]);
-    }
+    const lista = Array.isArray(todos) ? todos
+                : todos ? todos// si es string, parsearlo
+                : [];
+    res.json(lista);
   } catch (error) {
     console.error('Error al obtener tareas:', error);
     res.status(500).json({ error: 'Error al obtener las tareas' });
@@ -54,8 +51,10 @@ app.post('/api/todos', async (req, res) => {
     }
 
     const todos = await redisClient.get('todos');
-    const tareasActuales = todos ? JSON.parse(todos) : [];
-
+   //const tareasActuales = todos ? JSON.parse(todos) : [];
+    const tareasActuales = Array.isArray(todos) ? todos
+                : todos ? JSON.parse(todos) // si es string, parsearlo
+                : [];
     const nuevaTarea = {
       id: Date.now().toString(),
       texto: texto,
@@ -80,7 +79,7 @@ app.put('/api/todos/:id', async (req, res) => {
     const { completada } = req.body;
 
     const todos = await redisClient.get('todos');
-    const tareasActuales = todos ? JSON.parse(todos) : [];
+    const tareasActuales = todos ? todos : [];
 
     const indice = tareasActuales.findIndex(tarea => tarea.id === id);
 
@@ -104,7 +103,7 @@ app.delete('/api/todos/:id', async (req, res) => {
     const { id } = req.params;
 
     const todos = await redisClient.get('todos');
-    const tareasActuales = todos ? JSON.parse(todos) : [];
+    const tareasActuales = todos ? todos : [];
 
     const indice = tareasActuales.findIndex(tarea => tarea.id === id);
 
@@ -136,7 +135,7 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({
       status: 'ERROR',
       api: 'Funcionando',
-      redis: 'Desconectado',
+      redis: 'Desconectado',                          
       error: error.message,
       timestamp: new Date().toISOString()
     });

@@ -1,6 +1,7 @@
 const API_URL =  "https://todo-api-latest-gpya.onrender.com/api"
 async function cargarTareas() {
     try {
+        console.log("prueba")
         const respuesta = await fetch(`${API_URL}/todos`);
         const tareas = await respuesta.json();
 

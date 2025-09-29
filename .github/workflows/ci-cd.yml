@@ -67,3 +67,15 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
           ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+    - name: Trigger Render deploy front
+      if: github.ref == 'refs/heads/main'
+      run: |
+        curl "$RENDER_DEPLOY_HOOK_URL_FRONT"
+      env:
+        RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL_FRONT }}
+    - name: Trigger Render deploy api
+      if: github.ref == 'refs/heads/main'
+      run: |
+        curl "$RENDER_DEPLOY_HOOK_URL_API"
+      env:
+        RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL_API }}

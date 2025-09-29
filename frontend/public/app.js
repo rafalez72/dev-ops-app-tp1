@@ -1,4 +1,4 @@
-const API_URL =  "https://dev-ops-app-2.onrender.com/api"
+const API_URL =  "https://todo-api-latest-gpya.onrender.com/api"
 async function cargarTareas() {
     try {
         const respuesta = await fetch(`${API_URL}/todos`);

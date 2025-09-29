@@ -19,7 +19,7 @@ async function conectarRedis() {
       url: REDIS_URL,
       token: process.env.REDIS_TOKEN,
     })
-    //ghola
+    //gholaaaa
     console.log('✅ Conectado a Redis exitosamente');
   } catch (error) {
     console.error('❌ Error al conectar con Redis:', error);

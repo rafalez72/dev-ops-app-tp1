@@ -10,6 +10,7 @@ env:
   REGISTRY: docker.io
   API_IMAGE_NAME: todo-api
   FRONTEND_IMAGE_NAME: todo-frontend
+  REDIS_IMAGE_NAME: todo-redis 
 
 jobs:
   test:

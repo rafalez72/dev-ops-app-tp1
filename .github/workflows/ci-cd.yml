@@ -80,3 +80,11 @@ jobs:
         RENDER_DEPLOY_HOOK_URL_API: ${{ secrets.RENDER_DEPLOY_HOOK_URL_API }}
       run: |
         curl "$RENDER_DEPLOY_HOOK_URL_API"
+    - name: Build and push Redis image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./redis
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.REDIS_IMAGE_NAME }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.REDIS_IMAGE_NAME }}:${{ github.sha }}
